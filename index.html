@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" ?>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="./browserMqtt.js"></script>
+
+    <script>
+      var TractorIcon = L.Icon.extend({
+        options: {
+          iconUrl: 'tractor.png',
+          iconSize: [50, 50],
+          popupAnchor: L.point(0, -20)
+        }
+      });
+
+      var tractorIcon = new TractorIcon();
+
+      var client = mqtt.connect('ws://52.54.160.103:1883');
+      client.subscribe('ib1/gps/tpv');
+    </script>
+
+    <style type="text/css">
+      body {
+        margin: 0;
+      }
+
+      #map {
+        height: 100vh;
+      }
+    </style>
+
+    <title>Where's my ISOBlue?</title>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    <script>
+      var map = L.map('map').setView([40.429624, -86.912338], 17);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        })
+        .addTo(map);
+
+      var machine = L
+        .marker([0,0], {icon: tractorIcon})
+        .addTo(map);
+
+      client.on('message', function (topic, payload) {
+        gps = JSON.parse(payload);
+        console.log(gps.lat, gps.lon);
+
+        machine.setLatLng([gps.lat, gps.lon]);
+        L.circle([gps.lat, gps.lon], 1, {
+          color: 'rgb(97, 204, 249)',
+          fillColor: 'rgb(97, 204, 249)'
+        }).addTo(map);
+      });
+    </script>
+  </body>
+
+</html>
