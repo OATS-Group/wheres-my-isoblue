@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="./browserMqtt.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
 
     <script>
       var TractorIcon = L.Icon.extend({
@@ -17,8 +18,10 @@
 
       var tractorIcon = new TractorIcon();
 
-      var client = mqtt.connect('ws://52.54.160.103:1883');
+      //var client = mqtt.connect('ws://52.54.160.103:1883');
+      var client = mqtt.connect('ws://localhost:1883');
       client.subscribe('ib1/gps/tpv');
+			client.subscribe('ib1/ns');
     </script>
 
     <style type="text/css">
@@ -38,8 +41,25 @@
 
       #map {
         height: 100vh;
+				width: 140vh;
         display: none;
       }
+
+			#myChartParent {
+				width: 50vh;
+				height: auto;
+				display: none;
+			}
+
+			#sidebar {
+    		background: white;
+    		position: fixed;
+    		right: 0;
+    		top: 0;
+				height: 100vh;
+    		width: 50vh;
+				display: flex;
+    	}
 
       .loader {
         color: #000000;
@@ -135,9 +155,50 @@
       </div>
     </div>
     <div id="map"></div>
+		<div id="sidebar">
+			<div id="myChartParent">
+				<canvas id="myChart" width="400" height="400"></canvas>
+			</div>
+		</div>
 
     <script>
       var map = L.map('map');
+			var myLineChart = null;
+
+			var data = {
+					datasets: [
+							{
+									label: "Network Strength",
+									labels: new Array(10),
+									data: new Array(),
+							}
+					]
+			};
+
+			var options = {
+				animation: false,
+        scales: {
+            xAxes: [{
+                type: 'linear',
+                position: 'bottom',
+								ticks: {
+									autoSkip: false
+								}
+            }]
+        }
+			};
+
+			var ctx = document.getElementById("myChart").getContext('2d');
+			ctx.width = '100';
+			ctx.height = '50';
+
+			if (myLineChart === null) {
+				myLineChart = new Chart(ctx, {
+					type: 'line',
+					data: data,
+					options: options
+				});
+			}
 
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
@@ -147,9 +208,22 @@
       var machine = L
         .marker([0,0], {icon: tractorIcon})
         .addTo(map);
-
+			
       var connected = false;
       client.on('message', function (topic, payload) {
+				switch(topic) {
+					case 'ib1/gps/tpv':
+						processGps(payload);
+						break;
+
+					case 'ib1/ns':
+						processGps(payload);
+						processNetStrength(payload)
+						break;
+				}
+      });
+
+			function processGps(payload) {
         gps = JSON.parse(payload);
         console.log(gps.lat, gps.lon);
 
@@ -158,9 +232,11 @@
           map.setView([gps.lat, gps.lon], 17);
 
           var mapElm = document.getElementById('map');
+          var sideBarElm = document.getElementById('sidebar');
           var mainElm = document.getElementById('main');
 
-          mapElm.style.display = 'block';
+          mapElm.style.display = 'flex';
+					sideBarElm.style.display = 'block';
           mainElm.style.display = 'none';
 
           map.invalidateSize()
@@ -171,7 +247,25 @@
           color: 'rgb(97, 204, 249)',
           fillColor: 'rgb(97, 204, 249)'
         }).addTo(map);
-      });
+			}
+
+			function processNetStrength(payload) {
+				if (connected == true) {
+          var sideBarElm = document.getElementById('sidebar');
+					var chartElm = document.getElementById('myChartParent');
+
+					sideBarElm.style.display = 'block';
+					chartElm.style.display = 'block';
+				}
+
+				ns = JSON.parse(payload);
+				console.log(ns.timestamp, ns.strength);
+				myLineChart.data.datasets[0].data.push({x: ns.timestamp, y: ns.strength});
+				if (myLineChart.data.datasets[0].data.length === 10) {
+					myLineChart.data.datasets[0].data.shift();
+				}
+				myLineChart.update();
+			}
     </script>
   </body>
 
