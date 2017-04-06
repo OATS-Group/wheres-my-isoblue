@@ -163,6 +163,7 @@
     <script>
       var map = L.map('map');
 			var myLineChart = null;
+			var v = 0;
 
 			var data = {
 					datasets: [
@@ -251,7 +252,7 @@
         L.circle([gps.lat, gps.lon], 1, {
           color: 'rgb(97, 204, 249)',
           fillColor: 'rgb(97, 204, 249)'
-        }).addTo(map);
+        }).addTo(map).bindPopup(gps.speed.toString());
 			}
 
 			function processNetStrength(payload) {
