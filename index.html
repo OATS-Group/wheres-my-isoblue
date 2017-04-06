@@ -18,8 +18,7 @@
 
       var tractorIcon = new TractorIcon();
 
-      //var client = mqtt.connect('ws://52.54.160.103:1883');
-      var client = mqtt.connect('ws://localhost:1883');
+      var client = mqtt.connect('ws://52.54.160.103:1883');
       client.subscribe('ib1/gps/tpv');
 			client.subscribe('ib1/ns');
     </script>
