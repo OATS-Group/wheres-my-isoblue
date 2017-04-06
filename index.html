@@ -248,11 +248,15 @@
           map.invalidateSize()
         }
 
-        machine.setLatLng([gps.lat, gps.lon]);
+				var vStr = 'my current speed: ';
+				vStr += gps.speed.toString();
+				vStr += ' km/h'
+
+        machine.setLatLng([gps.lat, gps.lon]).bindPopup(vStr);
         L.circle([gps.lat, gps.lon], 1, {
           color: 'rgb(97, 204, 249)',
           fillColor: 'rgb(97, 204, 249)'
-        }).addTo(map).bindPopup(gps.speed.toString());
+        }).addTo(map);
 			}
 
 			function processNetStrength(payload) {
