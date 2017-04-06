@@ -163,6 +163,7 @@
     <script>
       var map = L.map('map');
 			var myLineChart = null;
+			var d = new Date(0);
 
 			var data = {
 					datasets: [
@@ -258,7 +259,9 @@
 
 				ns = JSON.parse(payload);
 				console.log(ns.timestamp, ns.strength);
-				myLineChart.data.datasets[0].data.push({x: ns.timestamp, y: ns.strength});
+				d.setUTCSeconds(ns.timestamp);
+				myLineChart.data.datasets[0].data.push({x: d.toLocaleTimeString(),
+					y: ns.strength});
 				if (myLineChart.data.datasets[0].data.length === 10) {
 					myLineChart.data.datasets[0].data.shift();
 				}
