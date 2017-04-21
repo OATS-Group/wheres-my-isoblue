@@ -11,16 +11,13 @@
     <script>
       var TractorIcon = L.Icon.extend({
         options: {
-          iconUrl: 'tractor.png',
           iconSize: [50, 50]
         }
       });
 
-      var tractorIcon = new TractorIcon();
-
       var client = mqtt.connect('ws://52.54.160.103:1883');
-      client.subscribe('ib1/gps/tpv');
-			client.subscribe('ib1/ns');
+      client.subscribe('+/gps/tpv');
+			client.subscribe('+/ns');
     </script>
 
     <style type="text/css">
@@ -166,32 +163,26 @@
 			var v = 0;
 
 			var data = {
-					datasets: [
-							{
-									label: "Network Strength",
-									labels: new Array(10),
-									data: new Array(),
-							}
-					]
+        datasets: []
 			};
 
 			var options = {
 				animation: false,
         scales: {
-            xAxes: [{
-                type: 'linear',
-                position: 'bottom',
-								ticks: {
-									autoSkip: false
-								}
-            }],
-						yAxes: [{
-								ticks: {
-									max: -44,
-									min: -100,
-									stepSize: 10
-								}
-						}]
+          xAxes: [{
+            type: 'linear',
+            position: 'bottom',
+            ticks: {
+              autoSkip: false
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              max: -44,
+              min: -100,
+              stepSize: 10
+            }
+          }]
         }
 			};
 
@@ -212,31 +203,48 @@
         })
         .addTo(map);
 
-      var machine = L
-        .marker([0,0], {icon: tractorIcon})
-        .addTo(map);
-			
+      // Store the markers
+      var tractors = [];
+      var tractorProps = [
+        {color: 'rgb(255, 70, 71)', icon: 'tractor-red.png'},
+        {color: 'rgb(66, 134, 244)', icon: 'tractor-blue.png'},
+        {color: 'rgb(54, 209, 85)', icon: 'tractor-green.png'}
+      ];
+      var chartIds = {};
+
       var connected = false;
       client.on('message', function (topic, payload) {
-				switch(topic) {
-					case 'ib1/gps/tpv':
-						processGps(payload);
+        var tParts = topic.split(/ib(\d)\/(.*)/);
+        var ibid = Number.parseInt(tParts[1]);
+
+				switch(tParts[2]) {
+					case 'gps/tpv':
+						processGps(ibid, payload);
 						break;
 
-					case 'ib1/ns':
-						processNetStrength(payload)
+					case 'ns':
+						processNetStrength(ibid, payload)
 						break;
 				}
       });
 
-			function processGps(payload) {
+			function processGps(ibid, payload) {
+        if(tractors[ibid] === undefined) {
+          tractors[ibid] = L.marker([0,0], {
+              icon: new TractorIcon({
+                iconUrl: tractorProps[ibid % tractorProps.length].icon
+              })
+            })
+            .addTo(map);
+        }
+
         gps = JSON.parse(payload);
-        console.log(gps.lat, gps.lon);
 
         if (connected == false) {
           connected = true;
           map.setView([gps.lat, gps.lon], 17);
 
+          // Yuck
           var mapElm = document.getElementById('map');
           var sideBarElm = document.getElementById('sidebar');
           var mainElm = document.getElementById('main');
@@ -246,20 +254,23 @@
           mainElm.style.display = 'none';
 
           map.invalidateSize()
+          // End yuck
         }
 
-				var vStr = 'my current speed: ';
-				vStr += gps.speed.toString();
-				vStr += ' km/h'
+        tractors[ibid]
+          .setLatLng([gps.lat, gps.lon])
+          .bindPopup('my current speed: ' + gps.speed + ' km/h');
 
-        machine.setLatLng([gps.lat, gps.lon]).bindPopup(vStr);
+        console.log(gps)
         L.circle([gps.lat, gps.lon], 1, {
-          color: 'rgb(97, 204, 249)',
-          fillColor: 'rgb(97, 204, 249)'
-        }).addTo(map);
+            color: tractorProps[ibid % tractorProps.length].color,
+            fillColor: tractorProps[ibid % tractorProps.length].color,
+            opacity: 0.6
+          })
+          .addTo(map);
 			}
 
-			function processNetStrength(payload) {
+			function processNetStrength(ibid, payload) {
 				if (connected == true) {
           var sideBarElm = document.getElementById('sidebar');
 					var chartElm = document.getElementById('myChartParent');
@@ -268,12 +279,22 @@
 					chartElm.style.display = 'block';
 				}
 
+        if(chartIds[ibid] === undefined) {
+          chartIds[ibid] = myLineChart.data.datasets.length;
+
+          myLineChart.data.datasets[chartIds[ibid]] = {
+            label: 'Network Strength, ' + ibid,
+            labels: new Array(10),
+            data: new Array(),
+          };
+        }
+
 				ns = JSON.parse(payload);
 				console.log(ns.timestamp, ns.strength);
-				myLineChart.data.datasets[0].data.push({x: ns.timestamp,
+				myLineChart.data.datasets[chartIds[ibid]].data.push({x: ns.timestamp,
 					y: ns.strength});
-				if (myLineChart.data.datasets[0].data.length === 10) {
-					myLineChart.data.datasets[0].data.shift();
+				if (myLineChart.data.datasets[chartIds[ibid]].data.length === 10) {
+					myLineChart.data.datasets[chartIds[ibid]].data.shift();
 				}
 				myLineChart.update();
 			}
