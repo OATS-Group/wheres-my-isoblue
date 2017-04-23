@@ -240,22 +240,24 @@
 
         gps = JSON.parse(payload);
 
+				if (gps.lat === null && gps.lon === null) {
+					return;
+				}
+
         if (connected == false) {
           connected = true;
-					if (gps.lat !== null && gps.lon !== null) {
-          	map.setView([gps.lat, gps.lon], 17);
+					map.setView([gps.lat, gps.lon], 17);
 
-						// Yuck
-						var mapElm = document.getElementById('map');
-						var sideBarElm = document.getElementById('sidebar');
-						var mainElm = document.getElementById('main');
+					// Yuck
+					var mapElm = document.getElementById('map');
+					var sideBarElm = document.getElementById('sidebar');
+					var mainElm = document.getElementById('main');
 
-						mapElm.style.display = 'flex';
-						sideBarElm.style.display = 'block';
-						mainElm.style.display = 'none';
+					mapElm.style.display = 'flex';
+					sideBarElm.style.display = 'block';
+					mainElm.style.display = 'none';
 
-						map.invalidateSize()
-					}
+					map.invalidateSize()
           // End yuck
         }
 
