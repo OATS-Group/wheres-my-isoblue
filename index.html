@@ -223,10 +223,24 @@
 						break;
 
 					case 'ns':
-						processNetStrength(ibid, payload)
+						processNetStrength(ibid, payload);
+						break;
+
+					case 'can/yield':
+						processYield(ibid, payload);
 						break;
 				}
       });
+
+			function processYield(ibid, payload) {
+        curr_yield = JSON.parse(payload);
+
+				if (curr_yield == null) {
+					return;
+				}
+
+				console.log(ibid, curr_yield);
+			}
 
 			function processGps(ibid, payload) {
         if(tractors[ibid] === undefined) {
