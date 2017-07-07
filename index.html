@@ -156,9 +156,17 @@
     <div id="map"></div>
 		<div id="sidebar">
 			<p>
-			<span id="ibyield"></span>
+			<span id="ib1yield"></span>
 			<br />
-			<span id="ibfr"></span>
+			<span id="ib1fr"></span>
+			<br />
+			<span id="ib2yield"></span>
+			<br />
+			<span id="ib2fr"></span>
+			<br />
+			<span id="ib3yield"></span>
+			<br />
+			<span id="ib3fr"></span>
 			</p>
 			<div id="myChartParent">
 				<canvas id="myChart" width="400" height="400"></canvas>
@@ -251,12 +259,24 @@
 			function processYield(ibid, payload) {
         curr_yield = JSON.parse(payload);
 
-        var spanElm = document.getElementById('ibyield');
-
-				spanElm.innerHTML = ibid + ' yield: ' + JSON.stringify(curr_yield) + ' bu/sec';
+        var yield1Elm = document.getElementById('ib1yield');
+        var yield2Elm = document.getElementById('ib2yield');
+        var yield3Elm = document.getElementById('ib3yield');
 
 				if (curr_yield == null) {
 					return;
+				}
+
+				switch(ibid) {
+					case 1:
+						yield1.innerHTML = '1: ' + JSON.stringify(curr_yield) + ' bu/sec';
+						break;
+					case 2:
+						yield2.innerHTML = '2: ' + JSON.stringify(curr_yield) + ' bu/sec';
+						break;
+					case 3:
+						yield3.innerHTML = '3: ' + JSON.stringify(curr_yield) + ' bu/sec';
+						break;
 				}
 
 				console.log(ibid, curr_yield);
@@ -274,12 +294,29 @@
 
 			function processFr(ibid, payload) {
        	fr = JSON.parse(payload);
-        var spanElm = document.getElementById('ibfr');
-
-				spanElm.innerHTML = ibid + ' fuel rate: ' + JSON.stringify(fr) + ' liters/h';
 
 				if (fr == null) {
 					return;
+				}
+
+        var fr1Elm = document.getElementById('ib1fr');
+        var fr2Elm = document.getElementById('ib2fr');
+        var fr3Elm = document.getElementById('ib3fr');
+
+				if (curr_fr == null) {
+					return;
+				}
+
+				switch(ibid) {
+					case 1:
+						fr1.innerHTML = '1: ' + JSON.stringify(fr) + ' liters/h';
+						break;
+					case 2:
+						fr2.innerHTML = '2: ' + JSON.stringify(fr) + ' liters/h';
+						break;
+					case 3:
+						fr3.innerHTML = '3: ' + JSON.stringify(fr) + ' liters/h';
+						break;
 				}
 
 				console.log(ibid, fr);
