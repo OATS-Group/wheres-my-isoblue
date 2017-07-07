@@ -253,7 +253,7 @@
 
         var spanElm = document.getElementById('ibyield');
 
-				spanElm.innerHTML = ibid + ': ' + curr_yield;
+				spanElm.innerHTML = ibid + ' yield: ' + JSON.stringify(curr_yield) + ' bu/sec';
 
 				if (curr_yield == null) {
 					return;
@@ -276,7 +276,7 @@
        	fr = JSON.parse(payload);
         var spanElm = document.getElementById('ibfr');
 
-				spanElm.innerHTML = ibid + ': ' + fr;
+				spanElm.innerHTML = ibid + ' fuel rate: ' + JSON.stringify(fr) + ' liters/h';
 
 				if (fr == null) {
 					return;
