@@ -19,6 +19,8 @@
       client.subscribe('+/gps/tpv');
 			client.subscribe('+/ns');
 			client.subscribe('+/can/yield');
+			client.subscribe('+/can/fr');
+			client.subscribe('+/can/ptorpm');
     </script>
 
     <style type="text/css">
@@ -230,6 +232,14 @@
 					case 'can/yield':
 						processYield(ibid, payload);
 						break;
+
+					case 'can/fr':
+						processFr(ibid, payload);
+						break;
+
+					case 'can/ptorpm':
+						processPtoRpm(ibid, payload);
+						break;
 				}
       });
 
@@ -241,6 +251,26 @@
 				}
 
 				console.log(ibid, curr_yield);
+			}
+
+			function processPtoRpm(ibid, payload) {
+        pto_rpm = JSON.parse(payload);
+
+				if (pto_rpm == null) {
+					return;
+				}
+
+				console.log(ibid, pto_rpm);
+			}
+
+			function processFr(ibid, payload) {
+       	fr = JSON.parse(payload);
+
+				if (fr == null) {
+					return;
+				}
+
+				console.log(ibid, fr);
 			}
 
 			function processGps(ibid, payload) {
