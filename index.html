@@ -158,6 +158,8 @@
 			<div id="myChartParent">
 				<canvas id="myChart" width="400" height="400"></canvas>
 			</div>
+			<span id="ibyield"></span>
+			<span id="ibfr"></span>
 		</div>
 
     <script>
@@ -246,6 +248,10 @@
 			function processYield(ibid, payload) {
         curr_yield = JSON.parse(payload);
 
+        var spanElm = document.getElementById('ibyield');
+
+				spanElm.setInnerHTML(ibid + ': ' + curr_yield);
+
 				if (curr_yield == null) {
 					return;
 				}
@@ -265,6 +271,9 @@
 
 			function processFr(ibid, payload) {
        	fr = JSON.parse(payload);
+        var spanElm = document.getElementById('ibfr');
+
+				spanElm.setInnerHTML(ibid + ': ' + fr);
 
 				if (fr == null) {
 					return;
