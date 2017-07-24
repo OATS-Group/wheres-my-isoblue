@@ -357,7 +357,7 @@
           .setLatLng([gps.lat, gps.lon])
           .bindPopup('my current speed: ' + gps.speed + ' km/h');
 
-        console.log(gps)
+        console.log(ibid, gps)
         L.circle([gps.lat, gps.lon], 1, {
             color: tractorProps[ibid % tractorProps.length].color,
             fillColor: tractorProps[ibid % tractorProps.length].color,
@@ -386,7 +386,7 @@
         }
 
 				ns = JSON.parse(payload);
-				console.log(ns.timestamp, ns.strength);
+				console.log(ibid, ns.timestamp, ns.strength);
 				myLineChart.data.datasets[chartIds[ibid]].data.push({x: ns.timestamp,
 					y: ns.strength});
 				if (myLineChart.data.datasets[chartIds[ibid]].data.length === 10) {
