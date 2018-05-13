@@ -227,6 +227,9 @@
         {color: 'rgb(54, 209, 85)', icon: 'tractor-green.png'},
         {color: 'rgb(71, 255, 252)', icon: 'tractor-cyan.png'},
         {color: 'rgb(237, 255, 35)', icon: 'tractor-yellow.png'}
+        {color: 'rgb(0, 0, 0)', icon: 'tractor-yellow.png'}
+        {color: 'rgb(255, 0, 255)', icon: 'tractor-yellow.png'}
+        {color: 'rgb(127, 0, 255)', icon: 'tractor-yellow.png'}
       ];
       var chartIds = {};
 
@@ -355,7 +358,7 @@
 
         tractors[ibid]
           .setLatLng([gps.lat, gps.lon])
-          .bindPopup('my current speed: ' + gps.speed + ' km/h');
+          .bindPopup('my current speed: ' + gps.speed + ' m/s');
 
         console.log(ibid, gps)
         L.circle([gps.lat, gps.lon], 1, {
