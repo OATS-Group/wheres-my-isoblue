@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="./browserMqtt.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
 
     <script>
       var TractorIcon = L.Icon.extend({
@@ -17,10 +16,7 @@
 
       var client = mqtt.connect('ws://cloudradio39.ecn.purdue.edu:1883');
       client.subscribe('+/gps/tpv');
-			client.subscribe('+/ns');
-			client.subscribe('+/can/yield');
 			client.subscribe('+/can/fr');
-			client.subscribe('+/can/ptorpm');
     </script>
 
     <style type="text/css">
@@ -143,76 +139,20 @@
 
     </style>
 
-    <title>Where's my ISOBlue?</title>
+    <title>Where Are the Shuttles?</title>
   </head>
 
   <body>
     <div id="main">
       <div id="waiting">
         <div class="loader">Loading...</div>
-        <h1>Waiting for an ISOBlue to connect...</h1>
+        <h1>Waiting for a shuttle to connect...</h1>
       </div>
     </div>
     <div id="map"></div>
-		<div id="sidebar">
-			<p>
-			<span id="ib1yield"></span>
-			<br />
-			<span id="ib1fr"></span>
-			<br />
-			<span id="ib2yield"></span>
-			<br />
-			<span id="ib2fr"></span>
-			<br />
-			<span id="ib3yield"></span>
-			<br />
-			<span id="ib3fr"></span>
-			</p>
-			<div id="myChartParent">
-				<canvas id="myChart" width="400" height="400"></canvas>
-			</div>
-		</div>
 
     <script>
       var map = L.map('map');
-			var myLineChart = null;
-			var v = 0;
-
-			var data = {
-        datasets: []
-			};
-
-			var options = {
-				animation: false,
-        scales: {
-          xAxes: [{
-            type: 'linear',
-            position: 'bottom',
-            ticks: {
-              autoSkip: false
-            }
-          }],
-          yAxes: [{
-            ticks: {
-              max: -44,
-              min: -100,
-              stepSize: 10
-            }
-          }]
-        }
-			};
-
-			var ctx = document.getElementById("myChart").getContext('2d');
-			ctx.width = '100';
-			ctx.height = '50';
-
-			if (myLineChart === null) {
-				myLineChart = new Chart(ctx, {
-					type: 'line',
-					data: data,
-					options: options
-				});
-			}
 
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
@@ -222,18 +162,11 @@
       // Store the markers
       var tractors = [];
       var tractorProps = [
-        {color: 'rgb(255, 70, 71)', icon: 'tractor-red.png'},
-        {color: 'rgb(66, 134, 244)', icon: 'tractor-blue.png'},
-        {color: 'rgb(54, 209, 85)', icon: 'tractor-green.png'},
-        {color: 'rgb(71, 255, 252)', icon: 'tractor-cyan.png'},
-        {color: 'rgb(237, 255, 35)', icon: 'tractor-yellow.png'},
-        {color: 'rgb(0, 0, 0)', icon: 'tractor-yellow.png'},
-        {color: 'rgb(255, 0, 255)', icon: 'tractor-yellow.png'},
-        {color: 'rgb(127, 0, 255)', icon: 'tractor-yellow.png'}
+        {icon: 'tractor-top.png'},
       ];
-      var chartIds = {};
 
       var connected = false;
+
       client.on('message', function (topic, payload) {
         var tParts = topic.split(/ib(\d)\/(.*)/);
         var ibid = Number.parseInt(tParts[1]);
@@ -247,80 +180,23 @@
 						processNetStrength(ibid, payload);
 						break;
 
-					case 'can/yield':
-						processYield(ibid, payload);
-						break;
-
 					case 'can/fr':
 						processFr(ibid, payload);
-						break;
-
-					case 'can/ptorpm':
-						processPtoRpm(ibid, payload);
 						break;
 				}
       });
 
-			function processYield(ibid, payload) {
-        curr_yield = JSON.parse(payload);
-
-        var yield1Elm = document.getElementById('ib1yield');
-        var yield2Elm = document.getElementById('ib2yield');
-        var yield3Elm = document.getElementById('ib3yield');
-
-				if (curr_yield == null) {
-					return;
-				}
-
-				switch(ibid) {
-					case 1:
-						yield1Elm.innerHTML = '1: ' + JSON.stringify(curr_yield) + ' bu/sec';
-						break;
-					case 2:
-						yield2Elm.innerHTML = '2: ' + JSON.stringify(curr_yield) + ' bu/sec';
-						break;
-					case 3:
-						yield3Elm.innerHTML = '3: ' + JSON.stringify(curr_yield) + ' bu/sec';
-						break;
-				}
-
-				console.log(ibid, curr_yield);
-			}
-
-			function processPtoRpm(ibid, payload) {
-        pto_rpm = JSON.parse(payload);
-
-				if (pto_rpm == null) {
-					return;
-				}
-
-				console.log(ibid, pto_rpm);
-			}
-
-			function processFr(ibid, payload) {
+			function processFuelRate(ibid, payload) {
        	fr = JSON.parse(payload);
 
 				if (fr == null) {
 					return;
 				}
+			}
 
-        var fr1Elm = document.getElementById('ib1fr');
-        var fr2Elm = document.getElementById('ib2fr');
-        var fr3Elm = document.getElementById('ib3fr');
-
-				switch(ibid) {
-					case 1:
-						fr1Elm.innerHTML = '1: ' + JSON.stringify(fr) + ' liters/h';
-						break;
-					case 2:
-						fr2Elm.innerHTML = '2: ' + JSON.stringify(fr) + ' liters/h';
-						break;
-					case 3:
-						fr3Elm.innerHTML = '3: ' + JSON.stringify(fr) + ' liters/h';
-						break;
-				}
-
-				console.log(ibid, fr);
+			function processNetStrength(ibid, payload) {
+				ns = JSON.parse(payload);
+				console.log(ibid, ns.timestamp, ns.strength);
 			}
 
 			function processGps(ibid, payload) {
@@ -345,11 +221,9 @@
 
 					// Yuck
 					var mapElm = document.getElementById('map');
-					var sideBarElm = document.getElementById('sidebar');
 					var mainElm = document.getElementById('main');
 
 					mapElm.style.display = 'flex';
-					sideBarElm.style.display = 'block';
 					mainElm.style.display = 'none';
 
 					map.invalidateSize()
@@ -358,44 +232,16 @@
 
         tractors[ibid]
           .setLatLng([gps.lat, gps.lon])
-          .bindPopup('my current speed: ' + gps.speed + ' m/s');
+          .bindPopup('speed: ' + gps.speed + ' m/s');
 
         console.log(ibid, gps)
+
         L.circle([gps.lat, gps.lon], 1, {
             color: tractorProps[ibid % tractorProps.length].color,
             fillColor: tractorProps[ibid % tractorProps.length].color,
             opacity: 0.6
           })
           .addTo(map);
-			}
-
-			function processNetStrength(ibid, payload) {
-				if (connected == true) {
-          var sideBarElm = document.getElementById('sidebar');
-					var chartElm = document.getElementById('myChartParent');
-
-					sideBarElm.style.display = 'block';
-					chartElm.style.display = 'block';
-				}
-
-        if(chartIds[ibid] === undefined) {
-          chartIds[ibid] = myLineChart.data.datasets.length;
-
-          myLineChart.data.datasets[chartIds[ibid]] = {
-            label: 'Network Strength, ' + ibid,
-            labels: new Array(10),
-            data: new Array(),
-          };
-        }
-
-				ns = JSON.parse(payload);
-				console.log(ibid, ns.timestamp, ns.strength);
-				myLineChart.data.datasets[chartIds[ibid]].data.push({x: ns.timestamp,
-					y: ns.strength});
-				if (myLineChart.data.datasets[chartIds[ibid]].data.length === 10) {
-					myLineChart.data.datasets[chartIds[ibid]].data.shift();
-				}
-				myLineChart.update();
 			}
     </script>
   </body>
