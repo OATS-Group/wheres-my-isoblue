@@ -224,7 +224,7 @@
       var tractorProps = [
         {
           color: 'rgb(255, 255, 0)',
-          icon: 'tractor-blue.png'
+          icon: 'tractor.png'
         }
       ];
       var chartIds = {};
@@ -323,7 +323,7 @@
         if(tractors[ibid] === undefined) {
           tractors[ibid] = L.marker([0,0], {
               icon: new TractorIcon({
-                iconUrl: tractorProps.icon
+                iconUrl: tractorProps[0].icon
               })
             })
             .addTo(map);
@@ -354,12 +354,12 @@
 
         tractors[ibid]
           .setLatLng([gps.lat, gps.lon])
-          .bindPopup('id: ' + ibid + '\n' + 'speed: ' + gps.speed + ' m/s');
+          .bindPopup('id: ' + ibid + '<br>' + 'speed: ' + gps.speed + ' m/s');
 
         console.log(ibid, gps)
         L.circle([gps.lat, gps.lon], 1, {
-            color: tractorProps.color,
-            fillColor: tractorProps.color,
+            color: tractorProps[0].color,
+            fillColor: tractorProps[0].color,
             opacity: 0.6
           })
           .addTo(map);
