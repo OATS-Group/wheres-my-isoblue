@@ -222,21 +222,17 @@
       // Store the markers
       var tractors = [];
       var tractorProps = [
-        {color: 'rgb(255, 70, 71)', icon: 'tractor-red.png'},
-        {color: 'rgb(66, 134, 244)', icon: 'tractor-blue.png'},
-        {color: 'rgb(54, 209, 85)', icon: 'tractor-green.png'},
-        {color: 'rgb(71, 255, 252)', icon: 'tractor-cyan.png'},
-        {color: 'rgb(237, 255, 35)', icon: 'tractor-yellow.png'},
-        {color: 'rgb(0, 0, 0)', icon: 'tractor-yellow.png'},
-        {color: 'rgb(255, 0, 255)', icon: 'tractor-yellow.png'},
-        {color: 'rgb(127, 0, 255)', icon: 'tractor-yellow.png'}
+        {
+          color: 'rgb(255, 255, 0)',
+          icon: 'tractor-blue.png'
+        }
       ];
       var chartIds = {};
 
       var connected = false;
       client.on('message', function (topic, payload) {
         var tParts = topic.split(/ib(\d)\/(.*)/);
-        var ibid = Number.parseInt(tParts[1]);
+        var ibid = Number.parseInt(tParts[1].replace(/^[0]+/g,""));
 
 				switch(tParts[2]) {
 					case 'gps/tpv':
@@ -327,7 +323,7 @@
         if(tractors[ibid] === undefined) {
           tractors[ibid] = L.marker([0,0], {
               icon: new TractorIcon({
-                iconUrl: tractorProps[ibid % tractorProps.length].icon
+                iconUrl: tractorProps.icon
               })
             })
             .addTo(map);
@@ -358,12 +354,12 @@
 
         tractors[ibid]
           .setLatLng([gps.lat, gps.lon])
-          .bindPopup('my current speed: ' + gps.speed + ' m/s');
+          .bindPopup('id: ' + ibid + '\n' + 'speed: ' + gps.speed + ' m/s');
 
         console.log(ibid, gps)
         L.circle([gps.lat, gps.lon], 1, {
-            color: tractorProps[ibid % tractorProps.length].color,
-            fillColor: tractorProps[ibid % tractorProps.length].color,
+            color: tractorProps.color,
+            fillColor: tractorProps.color,
             opacity: 0.6
           })
           .addTo(map);
