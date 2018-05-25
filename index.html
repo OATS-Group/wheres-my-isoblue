@@ -231,7 +231,8 @@
 
       var connected = false;
       client.on('message', function (topic, payload) {
-        var tParts = topic.split(/ib(\d)\/(.*)/);
+        var tParts = topic.split(/ib(\d+)\/(.*)/);
+        console.log(tParts);
         var ibid = Number.parseInt(tParts[1].replace(/^[0]+/g,""));
 
 				switch(tParts[2]) {
